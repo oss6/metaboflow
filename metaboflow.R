@@ -65,7 +65,8 @@ if (workflow_config$normalisation$type == 'pqn') {
 } else if (workflow_config$normalisation$type == 'vector') {
   transformation_model = transformation_model + vec_norm()
 } else {
-  # throw error
+  print('Error!')
+  stop()
 }
 
 if (workflow_config$transform$type == 'glog') {
@@ -77,18 +78,72 @@ if (workflow_config$transform$type == 'glog') {
 } else if (workflow_config$transform$type == 'nroot') {
   transformation_model = transformation_model + nroot_transform(root = workflow_config$transform$root)
 } else {
-  # throw error
+  print('Error!')
+  stop()
 }
 
 transformation_model = transformation_model + mean_centre()
 
 transformation_model = model_apply(transformation_model, pim_data)
 
+pim_transformed = predicted(transformation_model)
+
 # ---------------------------------------------
 # PCA
 # ---------------------------------------------
 
-pca_model = model_apply(PCA(), predicted(transformation_model))
+pca_model = model_apply(PCA(), pim_transformed)
 
 chart_plot(pca_scores_plot(factor_name='classLabel'), pca_model)
 
+# ---------------------------------------------
+# t-test
+# ---------------------------------------------
+
+ttest_model = filter_smeta(mode='include', factor_name = 'classLabel', levels=c('cow', 'sheep')) +
+  ttest(alpha = 0.05, mtc = 'fdr', factor_names = 'classLabel')
+
+ttest_model = model_apply(ttest_model, pim_transformed)
+
+data_p = predicted(ttest_model[1])
+
+ttest_output = as_data_frame(ttest_model[2])
+p_values = ttest_output$t_p_value
+ttest_output = ttest_output[order(ttest_output$t_p_value),]
+
+write.table(ttest_output, paste(workflow_config$output_directory, 'ttest.tsv', sep = '/'), sep = '\t', col.names = NA)
+
+# ---------------------------------------------
+# Fold change
+# ---------------------------------------------
+
+fold_change_model = filter_smeta(mode='include', factor_name = 'classLabel', levels=c('cow', 'sheep')) +
+  fold_change(factor_name = 'classLabel')
+fold_change_model = model_apply(fold_change_model, pim_data)
+
+fold_change_result = log2(fold_change_model[2]$fold_change)
+
+# ---------------------------------------------
+# Volcano plot
+# ---------------------------------------------
+
+volcano_plot_df = data.frame(colnames(pim), fold_change_result, p_values)
+colnames(volcano_plot_df) = c('mz', 'log2FoldChange', 'pvalue')
+rownames(volcano_plot_df) = NULL
+
+volcano_plot_df$dir <- "NO"
+# if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP" 
+volcano_plot_df$dir[volcano_plot_df$log2FoldChange > 0.6 & volcano_plot_df$pvalue < 0.05] <- "UP"
+# if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
+volcano_plot_df$dir[volcano_plot_df$log2FoldChange < -0.6 & volcano_plot_df$pvalue < 0.05] <- "DOWN"
+
+volcano_plot_df$label <- NA
+volcano_plot_df$label[volcano_plot_df$dir != "NO"] <- volcano_plot_df$mz[volcano_plot_df$dir != "NO"]
+
+ggplot(data=volcano_plot_df, aes(x=log2FoldChange, y=-log10(pvalue), col=dir, label=label)) +
+  geom_point() + 
+  theme_minimal() +
+  geom_text_repel() +
+  scale_color_manual(values=c("blue", "black", "red")) +
+  geom_vline(xintercept=c(-0.6, 0.6), col="red") +
+  geom_hline(yintercept=-log10(0.05), col="red")

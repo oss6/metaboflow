@@ -162,6 +162,14 @@
       "required": [
         "type"
       ]
+    },
+    "t_test": {
+      "type": "object",
+      "properties": {
+        "alpha": {
+          "type": "number"
+        }
+      }
     }
   }
 }
