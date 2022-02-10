@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.hdf5
+Rplots.pdf
+out/
+examples/

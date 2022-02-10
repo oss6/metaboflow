@@ -1,0 +1,50 @@
+{
+    "$schema": "./workflow-configuration.schema.json",
+    "output_directory": "out",
+
+    "process_scans": {
+        "function_noise": "median",
+        "snr_thres": 3.0,
+        "ppm": 2.0
+    },
+
+    "replicate_filter": {
+        "replicates": 3,
+        "min_peaks": 2,
+        "ppm": 2.0,
+        "rsd_thres": null
+    },
+
+    "align_samples": {
+        "ppm": 2.0
+    },
+
+    "blank_filter": {
+        "label": "blank",
+        "min_fold_change": 10.0,
+        "min_fraction": 1.0,
+        "function": "mean"
+    },
+
+    "sample_filter": {
+        "min_fraction": 0.8
+    },
+
+    "imputation": {
+        "neighbours": 10,
+        "feature_max": 50,
+        "sample_max": 50
+    },
+
+    "normalisation": {
+        "type": "pqn",
+        "qc_label": "QC",
+        "factor_name": "classLabel"
+    },
+
+    "transform": {
+        "type": "glog",
+        "qc_label": "QC",
+        "factor_name": "classLabel"
+    }
+}

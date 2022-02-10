@@ -1,0 +1,167 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "data_path": {
+      "type": "string"
+    },
+    "filelist_path": {
+      "type": "string"
+    },
+    "scans_path": {
+      "type": "string"
+    },
+    "output_directory": {
+      "type": "string"
+    },
+    "process_scans": {
+      "type": "object",
+      "properties": {
+        "function_noise": {
+          "type": "string"
+        },
+        "snr_thres": {
+          "type": "number"
+        },
+        "ppm": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "function_noise",
+        "snr_thres",
+        "ppm"
+      ]
+    },
+    "replicate_filter": {
+      "type": "object",
+      "properties": {
+        "replicates": {
+          "type": "integer"
+        },
+        "min_peaks": {
+          "type": "integer"
+        },
+        "ppm": {
+          "type": "number"
+        },
+        "rsd_thres": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "replicates",
+        "min_peaks",
+        "ppm",
+        "rsd_thres"
+      ]
+    },
+    "align_samples": {
+      "type": "object",
+      "properties": {
+        "ppm": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "ppm"
+      ]
+    },
+    "blank_filter": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "min_fold_change": {
+          "type": "number"
+        },
+        "min_fraction": {
+          "type": "number"
+        },
+        "function": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "min_fold_change",
+        "min_fraction",
+        "function"
+      ]
+    },
+    "sample_filter": {
+      "type": "object",
+      "properties": {
+        "min_fraction": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "min_fraction"
+      ]
+    },
+    "imputation": {
+      "type": "object",
+      "properties": {
+        "neighbours": {
+          "type": "integer"
+        },
+        "feature_max": {
+          "type": "number"
+        },
+        "sample_max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "neighbours",
+        "feature_max",
+        "sample_max"
+      ]
+    },
+    "normalisation": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "qc_label": {
+          "type": "string"
+        },
+        "factor_name": {
+          "type": "string"
+        },
+        "scaling_factor": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "qc_label": {
+          "type": "string"
+        },
+        "factor_name": {
+          "type": "string"
+        },
+        "base": {
+          "type": "integer"
+        },
+        "root": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    }
+  }
+}

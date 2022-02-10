@@ -1,0 +1,17 @@
+dimspy @ file:///opt/conda/conda-bld/dimspy_1628004068163/work
+fastcluster==1.1.26
+h5py @ file:///Users/runner/miniforge3/conda-bld/h5py_1617647554506/work
+mock @ file:///Users/runner/miniforge3/conda-bld/mock_1635819647729/work
+numexpr @ file:///Users/runner/miniforge3/conda-bld/numexpr_1614971399273/work
+numpy==1.17.1
+pandas==0.25.0
+plotly @ file:///home/conda/feedstock_root/build_artifacts/plotly_1640064922437/work
+pymzml==2.4.5
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1626286286081/work
+pythonnet==2.4.0
+pytz @ file:///home/conda/feedstock_root/build_artifacts/pytz_1633452062248/work
+regex @ file:///Users/runner/miniforge3/conda-bld/regex_1642551939575/work
+scipy==1.3.1
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+tables @ file:///Users/runner/miniforge3/conda-bld/pytables_1610156111299/work
+tenacity @ file:///home/conda/feedstock_root/build_artifacts/tenacity_1626090218611/work
