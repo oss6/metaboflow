@@ -10,7 +10,11 @@
 
 ## Install
 
-TODO.
+1. Clone this repository.
+2. Install [Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install).
+3. Run `./install.sh`
+
+Note: you can remove the conda environment using - `conda env remove -y --name metaboflow`
 
 ## Basic usage
 
@@ -18,5 +22,5 @@ TODO.
 
 ## TODO
 
-- Install scripts
 - Merge workflow configuration with defaults
+- Add ability to compare models

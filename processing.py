@@ -3,6 +3,7 @@ import dimspy.tools as ts
 import os
 import shutil
 import json
+import numpy
 
 def process_samples(config_filename):
     workflow_config_fd = open(config_filename)
@@ -32,9 +33,9 @@ def process_samples(config_filename):
             snr_thres=3.0,
             filelist=filelist_filename,
             ppm=2.0)
-        
+
         ts.hdf5_portal.save_peaklists_as_hdf5(scans, scans_path)
-    
+
     print('Applying replicate filter...')
     replicate_filter_opt = workflow_config['replicate_filter']
     filtered_scans = ts.replicate_filter(
@@ -42,7 +43,8 @@ def process_samples(config_filename):
         replicates=replicate_filter_opt['replicates'],
         min_peaks=replicate_filter_opt['min_peaks'],
         ppm=replicate_filter_opt['ppm'],
-        rsd_thres=replicate_filter_opt['rsd_thres'])
+        rsd_thres=replicate_filter_opt['rsd_thres'],
+        report=os.path.join(output_directory, 'processing_report.tsv'))
     ts.create_sample_list(filtered_scans, os.path.join(output_directory, 'meta_filtered-scans.tsv'))
 
     print('Aligning samples...')

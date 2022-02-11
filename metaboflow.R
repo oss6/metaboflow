@@ -1,15 +1,15 @@
 #!/usr/bin/env Rscript
 
-# BiocManager::install(c('pmp', 'ropls'))
-
-suppressWarnings(suppressMessages(library(ggplot2)))
-suppressWarnings(suppressMessages(library(ggrepel)))
-suppressWarnings(suppressMessages(library(pls)))
-suppressWarnings(suppressMessages(library(structToolbox)))
-suppressWarnings(suppressMessages(library(pmp)))
-suppressWarnings(suppressMessages(library(reticulate)))
-suppressWarnings(suppressMessages(library(argparse)))
-suppressWarnings(suppressMessages(library(rjson)))
+suppressWarnings(suppressMessages({
+  library(ggplot2)
+  library(ggrepel)
+  #library(pls)
+  library(structToolbox)
+  library(pmp)
+  library(reticulate)
+  library(argparse)
+  library(rjson)
+}))
 
 parser = ArgumentParser()
 
@@ -47,6 +47,8 @@ rownames(pim_variable_meta) = colnames(pim)
 colnames(pim_variable_meta) = c('dummy')
 
 pim_data = DatasetExperiment(pim, pim_sample_meta, pim_variable_meta)
+
+# pim_data_imp = predicted(model_apply(knn_impute(neighbours = 10), pim_data))
 
 # ---------------------------------------------
 # Normalisation, imputation, and glog transform
@@ -91,6 +93,8 @@ pim_transformed = predicted(transformation_model)
 # ---------------------------------------------
 # PCA
 # ---------------------------------------------
+
+pdf(file = paste(workflow_config$output_directory, 'plots.pdf', sep = '/'))
 
 pca_model = model_apply(PCA(), pim_transformed)
 
@@ -147,3 +151,16 @@ ggplot(data=volcano_plot_df, aes(x=log2FoldChange, y=-log10(pvalue), col=dir, la
   scale_color_manual(values=c("blue", "black", "red")) +
   geom_vline(xintercept=c(-0.6, 0.6), col="red") +
   geom_hline(yintercept=-log10(0.05), col="red")
+
+#
+#
+#
+
+# prepare model
+# M = stratified_split(p_train=0.75,factor_name='classLabel')
+# apply to filtered data
+# M = model_apply(M, data_p)
+# get data from object
+# train = M$training
+
+
