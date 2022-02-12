@@ -11,6 +11,18 @@
     "scans_path": {
       "type": "string"
     },
+    "use_scans_path": {
+      "type": "boolean"
+    },
+    "use_galaxy": {
+      "type": "boolean"
+    },
+    "galaxy_api_key": {
+      "type": "string"
+    },
+    "skip_processing": {
+      "type": "boolean"
+    },
     "output_directory": {
       "type": "string"
     },
@@ -25,12 +37,20 @@
         },
         "ppm": {
           "type": "number"
+        },
+        "min_fraction": {
+          "type": "number"
+        },
+        "min_scans": {
+          "type": "integer"
         }
       },
       "required": [
         "function_noise",
         "snr_thres",
-        "ppm"
+        "ppm",
+        "min_fraction",
+        "min_scans"
       ]
     },
     "replicate_filter": {
@@ -157,6 +177,17 @@
         },
         "root": {
           "type": "integer"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "scaling": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
         }
       },
       "required": [

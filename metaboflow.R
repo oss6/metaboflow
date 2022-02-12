@@ -3,12 +3,13 @@
 suppressWarnings(suppressMessages({
   library(ggplot2)
   library(ggrepel)
-  #library(pls)
+  library(pls)
   library(structToolbox)
   library(pmp)
   library(reticulate)
   library(argparse)
   library(rjson)
+  library(cowplot)
 }))
 
 parser = ArgumentParser()
@@ -20,7 +21,7 @@ parser$add_argument("-c", "--workflow-config", default=NULL,
 
 args = parser$parse_args()
 
-workflow_config = fromJSON(file = 'examples/workflow-configuration.json')
+workflow_config = fromJSON(file = args$workflow_config)
 
 if (!is.null(args$conda_env)) {
   Sys.setenv(RETICULATE_PYTHON = args$conda_env)
@@ -30,16 +31,28 @@ if (!is.null(args$conda_env)) {
 # Pre-processing
 # ---------------------------------------------
 
-#Sys.setenv(RETICULATE_PYTHON = "/Users/ossama-edbali/opt/miniconda3/envs/metaboflow/bin/python")
-# use_condaenv('metaboflow', required = TRUE)
-source_python('processing.py')
-process_samples(args$workflow_config)
+if (is.null(workflow_config[['skip_processing']])) {
+  workflow_config$skip_processing = FALSE
+}
 
-pim = read.csv(file = 'out/peak-intensity-matrix.tsv', check.names = FALSE, sep = '\t')
+if (!workflow_config$skip_processing) {
+  source_python('metaboflow_process.py')
+  process_samples(args$workflow_config)
+}
+
+pdf(file = paste(workflow_config$output_directory, 'plots.pdf', sep = '/'))
+
+# Process RSD QC data
+rsd_qc = read.csv(paste(workflow_config$output_directory, 'rsd.tsv', sep = '/'), sep = '\t')
+colnames(rsd_qc) = c('rsd')
+hist(rsd_qc$rsd, xlab = 'RSD QC', main = 'RSD plot')
+
+# Read the peak intensity matrix
+pim = read.csv(file = paste(workflow_config$output_directory, 'peak-intensity-matrix.tsv', sep = '/'), check.names = FALSE, sep = '\t')
 pim = pim[-1]
 pim[pim == 0.0] <- NA
 
-pim_sample_meta = read.csv(file = 'out/meta_blank-filtered.tsv', check.names = FALSE, sep = '\t')
+pim_sample_meta = read.csv(file = paste(workflow_config$output_directory, 'meta_blank-filtered.tsv', sep = '/'), check.names = FALSE, sep = '\t')
 pim_sample_meta = pim_sample_meta[-c(1, 2, 3, 4)]
 
 pim_variable_meta <- data.frame(matrix(1, ncol = 1, nrow = ncol(pim)))
@@ -48,10 +61,8 @@ colnames(pim_variable_meta) = c('dummy')
 
 pim_data = DatasetExperiment(pim, pim_sample_meta, pim_variable_meta)
 
-# pim_data_imp = predicted(model_apply(knn_impute(neighbours = 10), pim_data))
-
 # ---------------------------------------------
-# Normalisation, imputation, and glog transform
+# Normalisation, imputation, and transform
 # ---------------------------------------------
 
 transformation_model = knn_impute(
@@ -62,7 +73,7 @@ transformation_model = knn_impute(
 if (workflow_config$normalisation$type == 'pqn') {
   transformation_model = transformation_model +
     pqn_norm(qc_label = workflow_config$normalisation$qc_label, factor_name = workflow_config$normalisation$factor_name)
-} else if (workflow_config$normalisation$type == 'constant_sum') {
+} else if (workflow_config$normalisation$type == 'sum') {
   transformation_model = transformation_model + constant_sum_norm(scaling_factor = workflow_config$normalisation$scaling_factor)
 } else if (workflow_config$normalisation$type == 'vector') {
   transformation_model = transformation_model + vec_norm()
@@ -84,7 +95,16 @@ if (workflow_config$transform$type == 'glog') {
   stop()
 }
 
-transformation_model = transformation_model + mean_centre()
+if (workflow_config$scaling$type == 'mean') {
+  transformation_model = transformation_model + mean_centre()
+} else if (workflow_config$scaling$type == 'auto') {
+  transformation_model = transformation_model + autoscale()
+} else if (workflow_config$scaling$type == 'pareto') {
+  transformation_model = transformation_model + pareto_scale()
+} else {
+  print('Error!')
+  stop()
+}
 
 transformation_model = model_apply(transformation_model, pim_data)
 
@@ -93,8 +113,6 @@ pim_transformed = predicted(transformation_model)
 # ---------------------------------------------
 # PCA
 # ---------------------------------------------
-
-pdf(file = paste(workflow_config$output_directory, 'plots.pdf', sep = '/'))
 
 pca_model = model_apply(PCA(), pim_transformed)
 
@@ -109,7 +127,7 @@ ttest_model = filter_smeta(mode='include', factor_name = 'classLabel', levels=c(
 
 ttest_model = model_apply(ttest_model, pim_transformed)
 
-data_p = predicted(ttest_model[1])
+pim_transformed_two_labels = predicted(ttest_model[1])
 
 ttest_output = as_data_frame(ttest_model[2])
 p_values = ttest_output$t_p_value
@@ -135,32 +153,45 @@ volcano_plot_df = data.frame(colnames(pim), fold_change_result, p_values)
 colnames(volcano_plot_df) = c('mz', 'log2FoldChange', 'pvalue')
 rownames(volcano_plot_df) = NULL
 
-volcano_plot_df$dir <- "NO"
-# if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP" 
-volcano_plot_df$dir[volcano_plot_df$log2FoldChange > 0.6 & volcano_plot_df$pvalue < 0.05] <- "UP"
+volcano_plot_df$dir <- 'NO'
+# if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP"
+volcano_plot_df$dir[volcano_plot_df$log2FoldChange > 0.6 & volcano_plot_df$pvalue < 0.05] <- 'UP'
 # if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
-volcano_plot_df$dir[volcano_plot_df$log2FoldChange < -0.6 & volcano_plot_df$pvalue < 0.05] <- "DOWN"
+volcano_plot_df$dir[volcano_plot_df$log2FoldChange < -0.6 & volcano_plot_df$pvalue < 0.05] <- 'DOWN'
 
 volcano_plot_df$label <- NA
-volcano_plot_df$label[volcano_plot_df$dir != "NO"] <- volcano_plot_df$mz[volcano_plot_df$dir != "NO"]
+volcano_plot_df$label[volcano_plot_df$dir != 'NO'] <- volcano_plot_df$mz[volcano_plot_df$dir != 'NO']
 
 ggplot(data=volcano_plot_df, aes(x=log2FoldChange, y=-log10(pvalue), col=dir, label=label)) +
-  geom_point() + 
+  geom_point() +
   theme_minimal() +
   geom_text_repel() +
   scale_color_manual(values=c("blue", "black", "red")) +
   geom_vline(xintercept=c(-0.6, 0.6), col="red") +
   geom_hline(yintercept=-log10(0.05), col="red")
 
-#
-#
-#
+# ---------------------------------------------
+# Partial Least Squares (PLS) analysis
+# ---------------------------------------------
 
-# prepare model
-# M = stratified_split(p_train=0.75,factor_name='classLabel')
-# apply to filtered data
-# M = model_apply(M, data_p)
-# get data from object
-# train = M$training
+pim_transformed_two_labels$sample_meta[['classLabel']] = factor(pim_transformed_two_labels$sample_meta[['classLabel']])
 
+plsda_model = PLSDA(factor_name = 'classLabel')
+plsda_model = model_apply(plsda_model, pim_transformed_two_labels)
 
+chart_plot(plsda_scores_plot(factor_name = 'classLabel'), plsda_model)
+
+chart_plot(plsda_vip_summary_plot(), plsda_model)
+
+# run plsr (first converting the labels to numeric factors)
+pim_transformed_two_labels$sample_meta$classLabel = as.numeric(pim_transformed_two_labels$sample_meta$classLabel)
+plsr_model = PLSR(factor_name = 'classLabel', number_components = 3)
+plsr_model = model_apply(plsr_model, pim_transformed_two_labels)
+
+# diagnostic charts
+g1 = chart_plot(plsr_cook_dist(), plsr_model)
+g2 = chart_plot(plsr_prediction_plot(), plsr_model)
+g3 = chart_plot(plsr_qq_plot(), plsr_model)
+g4 = chart_plot(plsr_residual_hist(), plsr_model)
+
+plot_grid(plotlist = list(g1, g2, g3, g4), nrow = 2, align = 'vh')

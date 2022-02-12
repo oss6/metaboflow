@@ -1,14 +1,16 @@
 {
-  "$schema": "./workflow-configuration.schema.json",
-  "output_directory": "out",
+  "$schema": "../workflow-configuration.schema.json",
+  "data_path": "examples/batch_06.zip",
+  "filelist_path": "examples/filelist_batch_06.txt",
   "use_scans_path": false,
-  "use_galaxy": false,
-  "skip_processing": false,
+  "use_galaxy": true,
+  "galaxy_api_key": "YOUR API KEY",
+  "output_directory": "out_3",
   "process_scans": {
     "function_noise": "median",
     "snr_thres": 3.0,
-    "ppm": 2.0,
-    "min_fraction": 0.0,
+    "ppm": 5.0,
+    "min_fraction": 0.33,
     "min_scans": 1
   },
   "replicate_filter": {

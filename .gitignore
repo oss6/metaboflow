@@ -2,7 +2,13 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
 *.hdf5
+*.h5
 Rplots.pdf
 out/
-examples/
+out_*/
+__pycache__
+examples/**/*.zip
+examples/**/*.h5
+examples/**/*.txt

@@ -10,5 +10,6 @@ install.packages(c(
   'ggrepel',
   'reticulate',
   'argparse',
-  'rjson'
+  'rjson',
+  'cowplot'
 ), repos = 'http://cran.us.r-project.org')

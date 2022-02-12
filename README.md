@@ -24,3 +24,5 @@ TODO.
 
 - Merge workflow configuration with defaults
 - Add ability to compare models
+- Add input summary to output (to know how data was generated)
+- Add summary file and terminal

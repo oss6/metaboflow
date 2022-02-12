@@ -1,9 +1,10 @@
 {
-  "$schema": "./workflow-configuration.schema.json",
-  "output_directory": "out",
-  "use_scans_path": false,
+  "$schema": "../workflow-configuration.schema.json",
+  "scans_path": "examples/scans.h5",
+  "use_scans_path": true,
   "use_galaxy": false,
-  "skip_processing": false,
+  "skip_processing": true,
+  "output_directory": "out_1",
   "process_scans": {
     "function_noise": "median",
     "snr_thres": 3.0,

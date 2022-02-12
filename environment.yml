@@ -3,13 +3,6 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
- - python=3.7
- - dimspy=2.0.0
-#  - fastcluster=1.1.26
-#  - h5py=2.10.0
-#  - numpy=1.17.1
-#  - pandas=0.25.0
-#  - pymzml=2.4.5
-#  - pytables=3.6.1
-#  - pythonnet=2.4.0
-#  - scipy=1.3.1
+  - python=3.7
+  - dimspy=2.0.0
+  - bioblend=0.16.0

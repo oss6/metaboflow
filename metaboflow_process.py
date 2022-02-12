@@ -4,17 +4,20 @@ import os
 import shutil
 import json
 import numpy
+import sys
+import process_scans
 
 def process_samples(config_filename):
     workflow_config_fd = open(config_filename)
     workflow_config = json.load(workflow_config_fd)
     workflow_config_fd.close()
 
-    batch_zip_filename = 'examples/batch_06.zip'
-    data_directory = workflow_config['data_path']
-    filelist_filename = workflow_config['filelist_path']
-    output_directory = workflow_config['output_directory']
-    scans_path = workflow_config['scans_path']
+    data_path = workflow_config.get('data_path')
+    filelist_filename = workflow_config.get('filelist_path')
+    output_directory = workflow_config.get('output_directory')
+    scans_path = workflow_config.get('scans_path')
+    use_scans_path = workflow_config.get('use_scans_path', False)
+    use_galaxy = workflow_config.get('use_galaxy', False)
 
     if os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
@@ -22,19 +25,32 @@ def process_samples(config_filename):
 
     print('Process scans...')
 
-    if os.path.exists(scans_path):
+    if use_scans_path and os.path.exists(scans_path):
         scans = ts.hdf5_portal.load_peaklists_from_hdf5(scans_path)
     else:
-        # with zipfile.ZipFile(batch_zip_filename, 'r') as zip_ref:
-        #     zip_ref.extractall(data_directory)
-        scans = ts.process_scans(
-            data_directory,
-            function_noise='median',
-            snr_thres=3.0,
-            filelist=filelist_filename,
-            ppm=2.0)
+        data_directory = data_path
 
-        ts.hdf5_portal.save_peaklists_as_hdf5(scans, scans_path)
+        if use_galaxy:
+            scans_path = process_scans.galaxy_process_scans(workflow_config)
+            scans = ts.hdf5_portal.load_peaklists_from_hdf5('scans_tmp.h5')
+        else:
+            if zipfile.is_zipfile(data_path):
+                with zipfile.ZipFile(data_path, 'r') as zip_ref:
+                    data_directory = 'data'
+                    zip_ref.extractall(data_directory)
+
+            process_scans_opt = workflow_config['process_scans']
+            scans = ts.process_scans(
+                data_directory,
+                function_noise=process_scans_opt['function_noise'],
+                snr_thres=process_scans_opt['snr_thres'],
+                ppm=process_scans_opt['ppm'],
+                min_fraction=process_scans_opt['min_fraction'],
+                min_scans=process_scans_opt['min_scans'],
+                filelist=filelist_filename)
+
+            if scans_path is not None:
+                ts.hdf5_portal.save_peaklists_as_hdf5(scans, scans_path)
 
     print('Applying replicate filter...')
     replicate_filter_opt = workflow_config['replicate_filter']
@@ -69,6 +85,8 @@ def process_samples(config_filename):
     peak_matrix_filtered = ts.sample_filter(
         peak_matrix_blank_filtered,
         min_fraction=sample_filter_opt['min_fraction'])
+
+    numpy.savetxt(os.path.join(output_directory, 'rsd.tsv'), peak_matrix_filtered.rsd(classLabel = 'QC'), delimiter = '\t')
 
     ts.hdf5_portal.save_peak_matrix_as_hdf5(
         peak_matrix_filtered,
