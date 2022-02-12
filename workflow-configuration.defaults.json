@@ -2,6 +2,8 @@
   "$schema": "./workflow-configuration.schema.json",
   "output_directory": "out",
   "use_scans_path": false,
+  "factor_name": "classLabel",
+  "qc_label": "QC",
   "use_galaxy": false,
   "skip_processing": false,
   "process_scans": {

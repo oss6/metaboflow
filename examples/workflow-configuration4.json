@@ -8,12 +8,12 @@
   "use_galaxy": true,
   "galaxy_api_key": "YOUR API KEY",
   "skip_processing": false,
-  "output_directory": "out_1",
+  "output_directory": "out_4",
   "process_scans": {
     "function_noise": "median",
-    "snr_thres": 3.0,
+    "snr_thres": 6.0,
     "ppm": 2.0,
-    "min_fraction": 0.0,
+    "min_fraction": 0.33,
     "min_scans": 1
   },
   "replicate_filter": {

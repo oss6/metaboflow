@@ -18,11 +18,20 @@ Note: you can remove the conda environment using - `conda env remove -y --name m
 
 ## Basic usage
 
-TODO.
+To use the tool you have to provide a configuration file (check the examples and/or the schema JSON):
 
-## TODO
+```
+./metaboflow.R -c examples/workflow-configuration1.json
+```
+
+## Backlog
 
 - Merge workflow configuration with defaults
-- Add ability to compare models
-- Add input summary to output (to know how data was generated)
 - Add summary file and terminal
+- Galaxy history name
+
+## Future work
+
+Possible future work for `metaboflow`:
+
+- Background processing

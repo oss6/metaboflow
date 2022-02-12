@@ -3,12 +3,15 @@
   "data_path": "examples/batch_06.zip",
   "filelist_path": "examples/filelist_batch_06.txt",
   "use_scans_path": false,
+  "factor_name": "classLabel",
+  "qc_label": "QC",
   "use_galaxy": true,
   "galaxy_api_key": "YOUR API KEY",
+  "skip_processing": false,
   "output_directory": "out_3",
   "process_scans": {
     "function_noise": "median",
-    "snr_thres": 3.0,
+    "snr_thres": 1.0,
     "ppm": 5.0,
     "min_fraction": 0.33,
     "min_scans": 1

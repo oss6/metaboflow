@@ -1,5 +1,9 @@
 #!/usr/bin/env Rscript
 
+cat('---------------------------------\n')
+cat('------- metaboflow v0.1.0 -------\n')
+cat('---------------------------------\n\n')
+
 suppressWarnings(suppressMessages({
   library(ggplot2)
   library(ggrepel)
@@ -12,15 +16,29 @@ suppressWarnings(suppressMessages({
   library(cowplot)
 }))
 
-parser = ArgumentParser()
+source('modules/plotter.R')
+source('modules/rsd.R')
+source('modules/workflow_data.R')
+source('modules/data_transformer.R')
+source('modules/statistics.R')
 
-parser$add_argument("-e", "--conda-env", default=NULL,
-                    help = "Which conda environment to use [default \"%(default)s\"]")
-parser$add_argument("-c", "--workflow-config", default=NULL,
-                    help = "Path to the workflow configuration file [default \"%(default)s\"]")
+parser = ArgumentParser()
+parser$add_argument(
+  '-e',
+  '--conda-env',
+  default = NULL,
+  help = "Which conda environment to use [default \"%(default)s\"]"
+)
+parser$add_argument(
+  '-c',
+  '--workflow-config',
+  default = NULL,
+  help = "Path to the workflow configuration file [default \"%(default)s\"]"
+)
 
 args = parser$parse_args()
 
+workflow_config = fromJSON(file = 'examples/workflow-configuration3.json')
 workflow_config = fromJSON(file = args$workflow_config)
 
 if (!is.null(args$conda_env)) {
@@ -36,162 +54,97 @@ if (is.null(workflow_config[['skip_processing']])) {
 }
 
 if (!workflow_config$skip_processing) {
+  cat('Data processing\n')
+  cat('---------------\n\n')
+  
   source_python('metaboflow_process.py')
   process_samples(args$workflow_config)
 }
 
-pdf(file = paste(workflow_config$output_directory, 'plots.pdf', sep = '/'))
+# Prepare PDF plotting
+plotter = Plotter()
 
 # Process RSD QC data
-rsd_qc = read.csv(paste(workflow_config$output_directory, 'rsd.tsv', sep = '/'), sep = '\t')
-colnames(rsd_qc) = c('rsd')
-hist(rsd_qc$rsd, xlab = 'RSD QC', main = 'RSD plot')
+cat('\nProcess RSD QC data\n')
+cat('-------------------\n\n')
 
-# Read the peak intensity matrix
-pim = read.csv(file = paste(workflow_config$output_directory, 'peak-intensity-matrix.tsv', sep = '/'), check.names = FALSE, sep = '\t')
-pim = pim[-1]
-pim[pim == 0.0] <- NA
+cat('reading RSD file and plot histogram...\n')
+rsd = RSD(workflow_config, plotter)
+rsd$plot_hist()
+cat('done\n')
 
-pim_sample_meta = read.csv(file = paste(workflow_config$output_directory, 'meta_blank-filtered.tsv', sep = '/'), check.names = FALSE, sep = '\t')
-pim_sample_meta = pim_sample_meta[-c(1, 2, 3, 4)]
+# Load workflow data
+cat('reading workflow input data...\n')
+workflow_data = WorkflowData(workflow_config)
+cat('done\n')
 
-pim_variable_meta <- data.frame(matrix(1, ncol = 1, nrow = ncol(pim)))
-rownames(pim_variable_meta) = colnames(pim)
-colnames(pim_variable_meta) = c('dummy')
+# -------------------------------------------------
+# Normalisation, imputation, transform, and scaling
+# -------------------------------------------------
 
-pim_data = DatasetExperiment(pim, pim_sample_meta, pim_variable_meta)
+cat('\nNormalisation, missing values imputation, transform, and scaling\n')
+cat('----------------------------------------------------------------\n\n')
 
-# ---------------------------------------------
-# Normalisation, imputation, and transform
-# ---------------------------------------------
+data_transformer = DataTransformer(workflow_config)
 
-transformation_model = knn_impute(
-    neighbours = workflow_config$imputation$neighbours,
-    feature_max = workflow_config$imputation$feature_max,
-    sample_max = workflow_config$imputation$sample_max)
+cat('set missing values imputation\n')
+data_transformer$impute_missing_values()
 
-if (workflow_config$normalisation$type == 'pqn') {
-  transformation_model = transformation_model +
-    pqn_norm(qc_label = workflow_config$normalisation$qc_label, factor_name = workflow_config$normalisation$factor_name)
-} else if (workflow_config$normalisation$type == 'sum') {
-  transformation_model = transformation_model + constant_sum_norm(scaling_factor = workflow_config$normalisation$scaling_factor)
-} else if (workflow_config$normalisation$type == 'vector') {
-  transformation_model = transformation_model + vec_norm()
-} else {
-  print('Error!')
-  stop()
-}
+cat('set normalisation\n')
+data_transformer$normalise()
 
-if (workflow_config$transform$type == 'glog') {
-  transformation_model = transformation_model + glog_transform(
-    qc_label = workflow_config$transform$qc_label,
-    factor_name = workflow_config$transform$factor_name)
-} else if (workflow_config$transform$type == 'log') {
-  transformation_model = transformation_model + log_transform(base = workflow_config$transform$base)
-} else if (workflow_config$transform$type == 'nroot') {
-  transformation_model = transformation_model + nroot_transform(root = workflow_config$transform$root)
-} else {
-  print('Error!')
-  stop()
-}
+cat('set transformation\n')
+data_transformer$transform()
 
-if (workflow_config$scaling$type == 'mean') {
-  transformation_model = transformation_model + mean_centre()
-} else if (workflow_config$scaling$type == 'auto') {
-  transformation_model = transformation_model + autoscale()
-} else if (workflow_config$scaling$type == 'pareto') {
-  transformation_model = transformation_model + pareto_scale()
-} else {
-  print('Error!')
-  stop()
-}
+cat('set scaling\n')
+data_transformer$scale()
 
-transformation_model = model_apply(transformation_model, pim_data)
+cat('applying normalisation, missing value imputation, transform, and scaling...\n')
+data_transformer$apply_to_data(workflow_data)
+cat('done\n')
 
-pim_transformed = predicted(transformation_model)
+workflow_data$pim_transformed = predicted(data_transformer$model)
+workflow_data$pim_transformed_two_labels = data_transformer$remove_qc_samples()
 
 # ---------------------------------------------
-# PCA
+# Statistical analysis
 # ---------------------------------------------
 
-pca_model = model_apply(PCA(), pim_transformed)
+cat('\nStatistical analysis\n')
+cat('--------------------\n\n')
 
-chart_plot(pca_scores_plot(factor_name='classLabel'), pca_model)
+mb_stats = Statistics(workflow_config, workflow_data, plotter)
 
-# ---------------------------------------------
-# t-test
-# ---------------------------------------------
+cat('running PCA...\n')
+mb_stats$run_pca(plot = TRUE)
+cat('done\n')
 
-ttest_model = filter_smeta(mode='include', factor_name = 'classLabel', levels=c('cow', 'sheep')) +
-  ttest(alpha = 0.05, mtc = 'fdr', factor_names = 'classLabel')
+cat('running t-tests...\n')
+ttest_result = mb_stats$run_ttest(save_output = TRUE)
+cat('done\n')
 
-ttest_model = model_apply(ttest_model, pim_transformed)
+cat('running fold change...\n')
+fold_change_result = mb_stats$run_fold_change(save_output = TRUE)
+cat('done\n')
 
-pim_transformed_two_labels = predicted(ttest_model[1])
+cat('running volcano plot routine...\n')
+mb_stats$volcano_plot(fold_change_result, ttest_result$output_not_ordered)
+cat('done\n')
 
-ttest_output = as_data_frame(ttest_model[2])
-p_values = ttest_output$t_p_value
-ttest_output = ttest_output[order(ttest_output$t_p_value),]
+cat('running PLS-DA...\n')
+mb_stats$run_plsda(plot = TRUE)
+cat('done\n')
 
-write.table(ttest_output, paste(workflow_config$output_directory, 'ttest.tsv', sep = '/'), sep = '\t', col.names = NA)
+cat('running PLSR...\n')
+mb_stats$run_plsr(plot = TRUE)
+cat('done\n')
 
-# ---------------------------------------------
-# Fold change
-# ---------------------------------------------
-
-fold_change_model = filter_smeta(mode='include', factor_name = 'classLabel', levels=c('cow', 'sheep')) +
-  fold_change(factor_name = 'classLabel')
-fold_change_model = model_apply(fold_change_model, pim_data)
-
-fold_change_result = log2(fold_change_model[2]$fold_change)
-
-# ---------------------------------------------
-# Volcano plot
-# ---------------------------------------------
-
-volcano_plot_df = data.frame(colnames(pim), fold_change_result, p_values)
-colnames(volcano_plot_df) = c('mz', 'log2FoldChange', 'pvalue')
-rownames(volcano_plot_df) = NULL
-
-volcano_plot_df$dir <- 'NO'
-# if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP"
-volcano_plot_df$dir[volcano_plot_df$log2FoldChange > 0.6 & volcano_plot_df$pvalue < 0.05] <- 'UP'
-# if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
-volcano_plot_df$dir[volcano_plot_df$log2FoldChange < -0.6 & volcano_plot_df$pvalue < 0.05] <- 'DOWN'
-
-volcano_plot_df$label <- NA
-volcano_plot_df$label[volcano_plot_df$dir != 'NO'] <- volcano_plot_df$mz[volcano_plot_df$dir != 'NO']
-
-ggplot(data=volcano_plot_df, aes(x=log2FoldChange, y=-log10(pvalue), col=dir, label=label)) +
-  geom_point() +
-  theme_minimal() +
-  geom_text_repel() +
-  scale_color_manual(values=c("blue", "black", "red")) +
-  geom_vline(xintercept=c(-0.6, 0.6), col="red") +
-  geom_hline(yintercept=-log10(0.05), col="red")
+cat('saving plots...\n')
+pdf(file = paste(workflow_config$output_directory, 'plots.pdf', sep = '/'))
+suppressWarnings(invisible(lapply(plotter$plots, print)))
+cat('done\n')
 
 # ---------------------------------------------
-# Partial Least Squares (PLS) analysis
+# Workflow summary
 # ---------------------------------------------
 
-pim_transformed_two_labels$sample_meta[['classLabel']] = factor(pim_transformed_two_labels$sample_meta[['classLabel']])
-
-plsda_model = PLSDA(factor_name = 'classLabel')
-plsda_model = model_apply(plsda_model, pim_transformed_two_labels)
-
-chart_plot(plsda_scores_plot(factor_name = 'classLabel'), plsda_model)
-
-chart_plot(plsda_vip_summary_plot(), plsda_model)
-
-# run plsr (first converting the labels to numeric factors)
-pim_transformed_two_labels$sample_meta$classLabel = as.numeric(pim_transformed_two_labels$sample_meta$classLabel)
-plsr_model = PLSR(factor_name = 'classLabel', number_components = 3)
-plsr_model = model_apply(plsr_model, pim_transformed_two_labels)
-
-# diagnostic charts
-g1 = chart_plot(plsr_cook_dist(), plsr_model)
-g2 = chart_plot(plsr_prediction_plot(), plsr_model)
-g3 = chart_plot(plsr_qq_plot(), plsr_model)
-g4 = chart_plot(plsr_residual_hist(), plsr_model)
-
-plot_grid(plotlist = list(g1, g2, g3, g4), nrow = 2, align = 'vh')

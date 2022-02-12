@@ -2,32 +2,32 @@
   "$schema": "../workflow-configuration.schema.json",
   "data_path": "examples/batch_06.zip",
   "filelist_path": "examples/filelist_batch_06.txt",
+  "scans_path": "examples/w5-scans.h5",
   "use_scans_path": false,
   "factor_name": "classLabel",
   "qc_label": "QC",
-  "use_galaxy": true,
-  "galaxy_api_key": "YOUR API KEY",
+  "use_galaxy": false,
   "skip_processing": false,
-  "output_directory": "out_1",
+  "output_directory": "out_5",
   "process_scans": {
-    "function_noise": "median",
+    "function_noise": "mean",
     "snr_thres": 3.0,
-    "ppm": 2.0,
+    "ppm": 2.8,
     "min_fraction": 0.0,
     "min_scans": 1
   },
   "replicate_filter": {
     "replicates": 3,
     "min_peaks": 2,
-    "ppm": 2.0,
+    "ppm": 2.8,
     "rsd_thres": null
   },
   "align_samples": {
-    "ppm": 2.0
+    "ppm": 2.8
   },
   "blank_filter": {
     "label": "blank",
-    "min_fold_change": 10.0,
+    "min_fold_change": 11.0,
     "min_fraction": 1.0,
     "function": "mean"
   },
