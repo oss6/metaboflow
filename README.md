@@ -28,7 +28,6 @@ To use the tool you have to provide a configuration file (check the examples and
 
 - Merge workflow configuration with defaults
 - Add summary file and terminal
-- Galaxy history name
 
 ## Future work
 

@@ -6,7 +6,6 @@
   "use_scans_path": false,
   "factor_name": "classLabel",
   "qc_label": "QC",
-  "use_galaxy": false,
   "skip_processing": false,
   "output_directory": "out_5",
   "process_scans": {

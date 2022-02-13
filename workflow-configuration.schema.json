@@ -20,11 +20,19 @@
     "qc_label": {
       "type": "string"
     },
-    "use_galaxy": {
-      "type": "boolean"
-    },
-    "galaxy_api_key": {
-      "type": "string"
+    "galaxy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "api_key": {
+          "type": "string"
+        },
+        "history_name": {
+          "type": "string"
+        }
+      }
     },
     "skip_processing": {
       "type": "boolean"

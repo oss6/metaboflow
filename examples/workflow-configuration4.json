@@ -5,8 +5,11 @@
   "use_scans_path": false,
   "factor_name": "classLabel",
   "qc_label": "QC",
-  "use_galaxy": true,
-  "galaxy_api_key": "YOUR API KEY",
+  "galaxy": {
+    "enabled": true,
+    "api_key": "YOUR API KEY",
+    "history_name": "Process metabolomics data (4)"
+  },
   "skip_processing": false,
   "output_directory": "out_4",
   "process_scans": {

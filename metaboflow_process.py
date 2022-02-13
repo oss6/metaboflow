@@ -73,7 +73,7 @@ def process_samples_locally(workflow_config):
         peak_matrix_blank_filtered,
         min_fraction=sample_filter_opt['min_fraction'])
 
-    numpy.savetxt(os.path.join(output_directory, 'rsd.tsv'), peak_matrix_filtered.rsd(classLabel = 'QC'), delimiter = '\t')
+    numpy.savetxt(os.path.join(output_directory, 'rsd.tsv'), peak_matrix_filtered.rsd(classLabel = workflow_config.get('qc_label')), delimiter = '\t')
 
     pim_h5_tmp = os.path.join(output_directory, 'peak-intensity-matrix.h5')
 
@@ -99,7 +99,7 @@ def process_samples(config_filename):
     workflow_config_fd.close()
 
     output_directory = workflow_config.get('output_directory')
-    use_galaxy = workflow_config.get('use_galaxy', False)
+    galaxy_opts = workflow_config.get('galaxy')
 
     if os.path.isdir(output_directory):
         shutil.rmtree(output_directory)
@@ -107,7 +107,7 @@ def process_samples(config_filename):
 
     shutil.copy(config_filename, output_directory)
 
-    if use_galaxy:
+    if galaxy_opts is not None and galaxy_opts.get('enabled'):
         galaxy.run_workflow(workflow_config)
     else:
         process_samples_locally(workflow_config)

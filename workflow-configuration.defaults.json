@@ -4,7 +4,10 @@
   "use_scans_path": false,
   "factor_name": "classLabel",
   "qc_label": "QC",
-  "use_galaxy": false,
+  "galaxy": {
+    "enabled": false,
+    "api_key": ""
+  },
   "skip_processing": false,
   "process_scans": {
     "function_noise": "median",
