@@ -64,8 +64,8 @@ if (is.null(workflow_config[['skip_processing']])) {
 if (!args$skip_processing & !workflow_config$skip_processing) {
   cat('Data processing\n')
   cat('---------------\n\n')
-  
-  source_python('metaboflow_process.py')
+
+  source_python('modules/processing/process.py')
   process_samples(args$workflow_config)
 }
 

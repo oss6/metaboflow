@@ -3,7 +3,7 @@
   "data_path": "examples/batch_06.zip",
   "filelist_path": "examples/filelist_batch_06.txt",
   "scans_path": "examples/w5-scans.h5",
-  "use_scans_path": false,
+  "use_scans_path": true,
   "factor_name": "classLabel",
   "qc_label": "QC",
   "skip_processing": false,

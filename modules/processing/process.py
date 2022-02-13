@@ -5,7 +5,7 @@ import shutil
 import json
 import numpy
 import sys
-import galaxy
+from modules.processing import galaxy, pim_processing
 
 def process_samples_locally(workflow_config):
     data_path = workflow_config.get('data_path')
@@ -73,7 +73,7 @@ def process_samples_locally(workflow_config):
         peak_matrix_blank_filtered,
         min_fraction=sample_filter_opt.get('min_fraction'))
 
-    numpy.savetxt(os.path.join(output_directory, 'rsd.tsv'), peak_matrix_filtered.rsd(classLabel = workflow_config.get('qc_label')), delimiter = '\t')
+    pim_processing.save_rsd(workflow_config, peak_matrix_filtered)
 
     pim_h5_tmp = os.path.join(output_directory, 'peak-intensity-matrix.h5')
 

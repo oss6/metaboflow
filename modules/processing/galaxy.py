@@ -1,12 +1,11 @@
 import os
-import dimspy.tools as ts
-import numpy
 from bioblend.galaxy import GalaxyInstance
 from bioblend.galaxy.histories import HistoryClient
 from bioblend.galaxy.tools import ToolClient
 from bioblend.galaxy.datasets import DatasetClient
 from bioblend.galaxy.workflows import WorkflowClient
 from bioblend.galaxy.invocations import InvocationClient
+from modules.processing import pim_processing
 
 def run_workflow(workflow_config):
     galaxy_opts = workflow_config.get('galaxy')
@@ -114,5 +113,4 @@ def run_workflow(workflow_config):
     )
 
     # Save RSD file
-    pim = ts.txt_portal.load_peak_matrix_from_txt(os.path.join(output_directory, 'peak-intensity-matrix_comprehensive.tsv'))
-    numpy.savetxt(os.path.join(output_directory, 'rsd.tsv'), pim.rsd(classLabel = workflow_config.get('qc_label')), delimiter = '\t')
+    pim_processing.save_rsd(workflow_config, os.path.join(output_directory, 'peak-intensity-matrix_comprehensive.tsv'))
