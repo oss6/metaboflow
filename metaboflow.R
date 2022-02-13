@@ -40,6 +40,8 @@ args = parser$parse_args()
 
 workflow_config = fromJSON(file = args$workflow_config)
 
+# TODO: add validation
+
 if (!is.null(args$conda_env)) {
   Sys.setenv(RETICULATE_PYTHON = args$conda_env)
 }

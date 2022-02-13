@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .DS_Store
+notes.txt
 *.hdf5
 *.h5
 Rplots.pdf

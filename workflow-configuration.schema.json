@@ -3,45 +3,58 @@
   "type": "object",
   "properties": {
     "data_path": {
-      "type": "string"
+      "type": "string",
+      "description": "The path of the data, either as a directory or a zip file."
     },
     "filelist_path": {
-      "type": "string"
+      "type": "string",
+      "description": "The path of the metadata file."
     },
     "scans_path": {
-      "type": "string"
+      "type": "string",
+      "description": "The path where to save or read processed scans."
     },
     "use_scans_path": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether to use the scans path."
     },
     "factor_name": {
-      "type": "string"
+      "type": "string",
+      "description": "The factor name that decides the samples."
     },
     "qc_label": {
-      "type": "string"
+      "type": "string",
+      "description": "The quality control label in the samples."
     },
     "galaxy": {
       "type": "object",
+      "description": "Galaxy workflow running configuration.",
       "properties": {
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Whether to enable Galaxy workflow running."
         },
         "api_key": {
-          "type": "string"
+          "type": "string",
+          "description": "The Galaxy API key."
         },
         "history_name": {
-          "type": "string"
+          "type": "string",
+          "description": "The created history name."
         }
       }
     },
     "skip_processing": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Whether to skip data processing."
     },
     "output_directory": {
-      "type": "string"
+      "type": "string",
+      "description": "The output directory path."
     },
     "process_scans": {
       "type": "object",
+      "description": "Process scans step configuration.",
       "properties": {
         "function_noise": {
           "type": "string"
@@ -69,6 +82,7 @@
     },
     "replicate_filter": {
       "type": "object",
+      "description": "Replicate filter scans configuration.",
       "properties": {
         "replicates": {
           "type": "integer"
@@ -92,6 +106,7 @@
     },
     "align_samples": {
       "type": "object",
+      "description": "Align samples step configuration.",
       "properties": {
         "ppm": {
           "type": "number"
@@ -103,6 +118,7 @@
     },
     "blank_filter": {
       "type": "object",
+      "description": "Blank filter step configuration",
       "properties": {
         "label": {
           "type": "string"
@@ -126,6 +142,7 @@
     },
     "sample_filter": {
       "type": "object",
+      "description": "Sample filter step configuration.",
       "properties": {
         "min_fraction": {
           "type": "number"
@@ -137,6 +154,7 @@
     },
     "imputation": {
       "type": "object",
+      "description": "Missing values imputation configuration.",
       "properties": {
         "neighbours": {
           "type": "integer"
@@ -156,6 +174,7 @@
     },
     "normalisation": {
       "type": "object",
+      "description": "Normalisation step configuration.",
       "properties": {
         "type": {
           "type": "string"
@@ -176,6 +195,7 @@
     },
     "transform": {
       "type": "object",
+      "description": "Transform step configuration.",
       "properties": {
         "type": {
           "type": "string"
@@ -199,6 +219,7 @@
     },
     "scaling": {
       "type": "object",
+      "description": "Scaling step configuration.",
       "properties": {
         "type": {
           "type": "string"
@@ -210,6 +231,7 @@
     },
     "t_test": {
       "type": "object",
+      "description": "t-test configuration.",
       "properties": {
         "alpha": {
           "type": "number"
