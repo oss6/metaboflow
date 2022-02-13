@@ -35,6 +35,13 @@ parser$add_argument(
   default = NULL,
   help = "Path to the workflow configuration file [default \"%(default)s\"]"
 )
+parser$add_argument(
+  '-s',
+  '--skip-processing',
+  action = 'store_true',
+  default = FALSE,
+  help = "Whether to skip processing [default]"
+)
 
 args = parser$parse_args()
 
@@ -54,7 +61,7 @@ if (is.null(workflow_config[['skip_processing']])) {
   workflow_config$skip_processing = FALSE
 }
 
-if (!workflow_config$skip_processing) {
+if (!args$skip_processing & !workflow_config$skip_processing) {
   cat('Data processing\n')
   cat('---------------\n\n')
   
@@ -72,6 +79,8 @@ cat('-------------------\n\n')
 cat('reading RSD file and plot histogram...\n')
 rsd = RSD(workflow_config, plotter)
 rsd$plot_hist()
+rsd_summary = rsd$summary()
+cat(paste('RSD QC:', rsd_summary, '\n'))
 cat('done\n')
 
 # Load workflow data
@@ -165,10 +174,11 @@ workflow_summary = as.data.frame(matrix(c(
   c('fold-change.tsv', 'Fold change values'),
   c('ttest.tsv', 't-test summary for each peak'),
   c('plots.pdf', 'All generated plots'),
-  c('workflow-configuration.json', 'The workflow configuration that generated the results')
-), nrow = 9, ncol = 2, byrow = TRUE))
+  c('workflow-configuration.json', 'The workflow configuration that generated the results'),
+  c('RSD', rsd$summary())
+), nrow = 10, ncol = 2, byrow = TRUE))
 
-colnames(workflow_summary) = c('Resource name', 'Description')
+colnames(workflow_summary) = c('Resource name/Statistic', 'Description')
 
 write.table(
   workflow_summary,
@@ -177,4 +187,4 @@ write.table(
   row.names = FALSE
 )
 
-cat('Workflow summary saved in SUMMARY.txt\n')
+cat('Workflow summary saved in SUMMARY.tsv\n')

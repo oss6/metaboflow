@@ -21,6 +21,10 @@ RSD = function (workflow_config, plotter) {
     rsd_qc = 'ANY'
   ),
   methods = list(
+    summary = function () {
+      return(median(rsd_qc$rsd, na.rm = TRUE))
+    },
+    
     plot_hist = function () {
       plotter$add_plot(
         ggplot(rsd_qc, aes(x = rsd)) +

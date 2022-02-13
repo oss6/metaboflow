@@ -26,52 +26,52 @@ def process_samples_locally(workflow_config):
                 data_directory = 'data'
                 zip_ref.extractall(data_directory)
 
-        process_scans_opt = workflow_config['process_scans']
+        process_scans_opt = workflow_config.get('process_scans')
         scans = ts.process_scans(
             data_directory,
-            function_noise=process_scans_opt['function_noise'],
-            snr_thres=process_scans_opt['snr_thres'],
-            ppm=process_scans_opt['ppm'],
-            min_fraction=process_scans_opt['min_fraction'],
-            min_scans=process_scans_opt['min_scans'],
+            function_noise=process_scans_opt.get('function_noise'),
+            snr_thres=process_scans_opt.get('snr_thres'),
+            ppm=process_scans_opt.get('ppm'),
+            min_fraction=process_scans_opt.get('min_fraction'),
+            min_scans=process_scans_opt.get('min_scans'),
             filelist=filelist_filename)
 
         if scans_path is not None:
             ts.hdf5_portal.save_peaklists_as_hdf5(scans, scans_path)
 
     print('Applying replicate filter...')
-    replicate_filter_opt = workflow_config['replicate_filter']
+    replicate_filter_opt = workflow_config.get('replicate_filter')
     filtered_scans = ts.replicate_filter(
         scans,
-        replicates=replicate_filter_opt['replicates'],
-        min_peaks=replicate_filter_opt['min_peaks'],
-        ppm=replicate_filter_opt['ppm'],
-        rsd_thres=replicate_filter_opt['rsd_thres'],
+        replicates=replicate_filter_opt.get('replicates'),
+        min_peaks=replicate_filter_opt.get('min_peaks'),
+        ppm=replicate_filter_opt.get('ppm'),
+        rsd_thres=replicate_filter_opt.get('rsd_thres'),
         report=os.path.join(output_directory, 'processing_report.tsv'))
     ts.create_sample_list(filtered_scans, os.path.join(output_directory, 'meta_filtered-scans.tsv'))
 
     print('Aligning samples...')
-    align_samples_opt = workflow_config['align_samples']
+    align_samples_opt = workflow_config.get('align_samples')
     peak_matrix = ts.align_samples(
         filtered_scans,
-        ppm=align_samples_opt['ppm'],
+        ppm=align_samples_opt.get('ppm'),
         filelist=os.path.join(output_directory, 'meta_filtered-scans.tsv'))
 
     print('Applying blank filter...')
-    blank_filter_opt = workflow_config['blank_filter']
+    blank_filter_opt = workflow_config.get('blank_filter')
     peak_matrix_blank_filtered = ts.blank_filter(
         peak_matrix,
-        blank_label=blank_filter_opt['label'],
-        min_fold_change=blank_filter_opt['min_fold_change'],
-        min_fraction=blank_filter_opt['min_fraction'],
-        function=blank_filter_opt['function'])
+        blank_label=blank_filter_opt.get('label'),
+        min_fold_change=blank_filter_opt.get('min_fold_change'),
+        min_fraction=blank_filter_opt.get('min_fraction'),
+        function=blank_filter_opt.get('function'))
     ts.create_sample_list(peak_matrix_blank_filtered, os.path.join(output_directory, 'peak-intensity-matrix_meta.tsv'))
 
     print('Applying sample filter...')
-    sample_filter_opt = workflow_config['sample_filter']
+    sample_filter_opt = workflow_config.get('sample_filter')
     peak_matrix_filtered = ts.sample_filter(
         peak_matrix_blank_filtered,
-        min_fraction=sample_filter_opt['min_fraction'])
+        min_fraction=sample_filter_opt.get('min_fraction'))
 
     numpy.savetxt(os.path.join(output_directory, 'rsd.tsv'), peak_matrix_filtered.rsd(classLabel = workflow_config.get('qc_label')), delimiter = '\t')
 
