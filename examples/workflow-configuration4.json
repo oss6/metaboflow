@@ -6,7 +6,7 @@
   "qc_label": "QC",
   "galaxy": {
     "enabled": true,
-    "api_key": "df5d82c2fb68cc08e1151b33da9da27f",
+    "api_key": "YOUR API KEY",
     "history_name": "Process metabolomics data (4)"
   },
   "skip_processing": false,
