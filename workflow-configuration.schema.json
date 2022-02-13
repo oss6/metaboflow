@@ -1,17 +1,38 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "required": [
+    "data_path",
+    "filelist_path",
+    "scans_path",
+    "use_scans_path",
+    "factor_name",
+    "qc_label",
+    "galaxy",
+    "skip_processing",
+    "output_directory",
+    "process_scans",
+    "replicate_filter",
+    "align_samples",
+    "blank_filter",
+    "sample_filter",
+    "imputation",
+    "normalisation",
+    "transform",
+    "scaling",
+    "t_test"
+  ],
   "properties": {
     "data_path": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "The path of the data, either as a directory or a zip file."
     },
     "filelist_path": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "The path of the metadata file."
     },
     "scans_path": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "The path where to save or read processed scans."
     },
     "use_scans_path": {
@@ -94,7 +115,7 @@
           "type": "number"
         },
         "rsd_thres": {
-          "type": "null"
+          "type": ["number", "null"]
         }
       },
       "required": [

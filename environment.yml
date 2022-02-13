@@ -2,7 +2,9 @@ name: metaboflow
 channels:
   - conda-forge
   - bioconda
+  - anaconda
 dependencies:
   - python=3.7
   - dimspy=2.0.0
   - bioblend=0.16.0
+  - jsonschema=3.2.0

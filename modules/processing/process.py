@@ -101,12 +101,6 @@ def process_samples(config_filename):
     output_directory = workflow_config.get('output_directory')
     galaxy_opts = workflow_config.get('galaxy')
 
-    if os.path.isdir(output_directory):
-        shutil.rmtree(output_directory)
-    os.mkdir(output_directory)
-
-    shutil.copyfile(config_filename, os.path.join(output_directory, 'workflow-configuration.json'))
-
     if galaxy_opts is not None and galaxy_opts.get('enabled'):
         galaxy.run_workflow(workflow_config)
     else:

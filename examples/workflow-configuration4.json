@@ -1,5 +1,4 @@
 {
-  "$schema": "../workflow-configuration.schema.json",
   "data_path": "examples/batch_06.zip",
   "filelist_path": "examples/filelist_batch_06.txt",
   "use_scans_path": false,
@@ -7,7 +6,7 @@
   "qc_label": "QC",
   "galaxy": {
     "enabled": true,
-    "api_key": "YOUR API KEY",
+    "api_key": "df5d82c2fb68cc08e1151b33da9da27f",
     "history_name": "Process metabolomics data (4)"
   },
   "skip_processing": false,

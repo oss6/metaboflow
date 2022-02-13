@@ -22,6 +22,10 @@ source('modules/workflow_data.R')
 source('modules/data_transformer.R')
 source('modules/statistics.R')
 
+# ---------------------------------------------
+# CLI arguments/options parsing
+# ---------------------------------------------
+
 parser = ArgumentParser()
 parser$add_argument(
   '-e',
@@ -42,31 +46,48 @@ parser$add_argument(
   default = FALSE,
   help = "Whether to skip processing [default]"
 )
+parser$add_argument(
+  '-a',
+  '--skip-analysis',
+  action = 'store_true',
+  default = FALSE,
+  help = "Whether to skip analysis [default]"
+)
 
 args = parser$parse_args()
-
-workflow_config = fromJSON(file = args$workflow_config)
-
-# TODO: add validation
 
 if (!is.null(args$conda_env)) {
   Sys.setenv(RETICULATE_PYTHON = args$conda_env)
 }
 
 # ---------------------------------------------
-# Pre-processing
+# Workflow configuration validation
 # ---------------------------------------------
 
-if (is.null(workflow_config[['skip_processing']])) {
-  workflow_config$skip_processing = FALSE
+source_python('modules/validation.py')
+workflow_config_filename = validate_configuration(args$workflow_config)
+
+if (is.null(workflow_config_filename)) {
+  cat('The workflow configuration is not in the correct format. Please check the schema.')
+  quit(status = 1)
 }
+
+workflow_config = fromJSON(file = workflow_config_filename)
+
+# ---------------------------------------------
+# Pre-processing
+# ---------------------------------------------
 
 if (!args$skip_processing & !workflow_config$skip_processing) {
   cat('Data processing\n')
   cat('---------------\n\n')
 
   source_python('modules/processing/process.py')
-  process_samples(args$workflow_config)
+  process_samples(workflow_config_filename)
+}
+
+if (args$skip_analysis) {
+  quit()
 }
 
 # Prepare PDF plotting

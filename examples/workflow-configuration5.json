@@ -1,5 +1,4 @@
 {
-  "$schema": "../workflow-configuration.schema.json",
   "data_path": "examples/batch_06.zip",
   "filelist_path": "examples/filelist_batch_06.txt",
   "scans_path": "examples/w5-scans.h5",

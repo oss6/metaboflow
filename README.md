@@ -41,4 +41,5 @@ To reproduce an example, please follow these steps:
 
 Possible future work for `metaboflow`:
 
-- Background processing
+- Background or cloud processing
+- Search in metabolomics databases for metabolites with significant m/z.
