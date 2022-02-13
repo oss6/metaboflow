@@ -37,11 +37,6 @@ To reproduce an example, please follow these steps:
 3. If using a workflow configuration that uses Galaxy then [create an API access key](https://galaxyproject.org/develop/api/). Put the access key in the appropriate place in the configuration: `galaxy.api_key`.
 4. Run the workflow using the above command.
 
-## Backlog
-
-- Merge workflow configuration with defaults
-- Add summary file and terminal
-
 ## Future work
 
 Possible future work for `metaboflow`:
