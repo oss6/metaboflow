@@ -105,7 +105,7 @@ def process_samples(config_filename):
         shutil.rmtree(output_directory)
     os.mkdir(output_directory)
 
-    shutil.copy(config_filename, output_directory)
+    shutil.copyfile(config_filename, os.path.join(output_directory, 'workflow-configuration.json'))
 
     if galaxy_opts is not None and galaxy_opts.get('enabled'):
         galaxy.run_workflow(workflow_config)

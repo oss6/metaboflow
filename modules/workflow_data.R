@@ -9,7 +9,6 @@ WorkflowData = function (workflow_config) {
   instance$pim[instance$pim == 0.0] = NA
 
   # Read the samples metadata
-  # 'meta_blank-filtered.tsv'
   instance$pim_sample_meta = read.csv(file = paste(workflow_config$output_directory, 'peak-intensity-matrix_meta.tsv', sep = '/'), check.names = FALSE, sep = '\t')
   instance$pim_sample_meta = instance$pim_sample_meta[-c(1, 2, 3, 4)]
 

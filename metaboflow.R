@@ -38,7 +38,6 @@ parser$add_argument(
 
 args = parser$parse_args()
 
-workflow_config = fromJSON(file = 'examples/workflow-configuration3.json')
 workflow_config = fromJSON(file = args$workflow_config)
 
 if (!is.null(args$conda_env)) {
@@ -106,6 +105,13 @@ cat('done\n')
 workflow_data$pim_transformed = predicted(data_transformer$model)
 workflow_data$pim_transformed_two_labels = data_transformer$remove_qc_samples()
 
+write.table(
+  workflow_data$pim_transformed$data,
+  paste(workflow_config$output_directory, 'peak-intensity-matrix_transformed.tsv', sep = '/'),
+  sep = '\t',
+  col.names = NA
+)
+
 # ---------------------------------------------
 # Statistical analysis
 # ---------------------------------------------
@@ -142,9 +148,31 @@ cat('done\n')
 cat('saving plots...\n')
 pdf(file = paste(workflow_config$output_directory, 'plots.pdf', sep = '/'))
 suppressWarnings(invisible(lapply(plotter$plots, print)))
-cat('done\n')
+cat('done\n\n')
 
 # ---------------------------------------------
 # Workflow summary
 # ---------------------------------------------
 
+workflow_summary = as.data.frame(matrix(c(
+  c('peak-intensity-matrix.tsv', 'Non-normalised peak intensity matrix'),
+  c('peak-intensity-matrix_comprehensive.tsv', 'Comprehensive version of the non-normalised peak intensity matrix'),
+  c('peak-intensity-matrix_meta.tsv', 'Non-normalised peak intensity matrix sample metadata'),
+  c('peak-intensity-matrix_transformed.tsv', 'Transformed peak intensity matrix (normalised, missing values imputation, scaling, transform)'),
+  c('rsd.tsv', 'List of RSD values for each peak'),
+  c('fold-change.tsv', 'Fold change values'),
+  c('ttest.tsv', 't-test summary for each peak'),
+  c('plots.pdf', 'All generated plots'),
+  c('workflow-configuration.json', 'The workflow configuration that generated the results')
+), nrow = 9, ncol = 2, byrow = TRUE))
+
+colnames(workflow_summary) = c('Resource name', 'Description')
+
+write.table(
+  workflow_summary,
+  file = paste(workflow_config$output_directory, 'SUMMARY.tsv', sep = '/'),
+  sep = '\t',
+  row.names = FALSE
+)
+
+cat('Workflow summary saved in SUMMARY.txt\n')
